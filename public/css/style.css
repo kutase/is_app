@@ -72,3 +72,9 @@
   font-size: 12px;
   margin-top: 10px!important;
 }
+
+.send_reserve_form {
+  float: right;
+  margin-right: 13px;
+  margin-top: 15px;
+}

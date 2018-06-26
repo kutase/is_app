@@ -62,38 +62,47 @@
                     <h5>Заполните данные для резервирования</h5>
                     <div class="row">
                         <div class="input-field col s12">
-                            <input id="name" type="text" class="validate">
+                            <input id="name" type="text" class="validate" required aria-required="true">
                             <label for="name">ФИО</label>
+                            <span class="helper-text" data-error="Необходимо заполнить поле"></span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="input-field col s12">
-                            <input id="email" type="email" class="validate">
+                            <input id="email" type="email" class="validate" required aria-required="true">
                             <label for="email">Email</label>
+                            <span class="helper-text" data-error="Необходимо заполнить поле"></span>
                         </div>
                     </div>
                     <div class="row">
                         <div class="input-field col s12">
-                            <select>
-                                <option value="" selected>Выбрать количество дней</option>
+                            <select required="" aria-required="true">
+                                <option value="" disabled selected>Выбрать количество дней</option>
                                 <option value="7">7</option>
                                 <option value="14">14</option>
                                 <option value="28">28</option>
                                 <option value="56">56</option>
                             </select>
                             <label>На сколько дней берется книга</label>
+                            <span class="helper-text" data-error="Неправильный формат"></span>
                         </div>
                     </div>
-                    <div class="row">
-                        <button class="modal-close waves-effect waves-green btn-flat send_reserve_form" type="submit">Отправить</button>
+                    <div class="row" style="margin-bottom: 0;">
+                        <button class="waves-effect waves-light btn send_reserve_form red" type="submit">Отправить</button>
                     </div>
                 </form>
             </div>
         </div>
-        <!-- <div class="modal-footer">
-            
-            <a href="" >Отправить</a>
-        </div> -->
+    </div>
+
+    <div id="modal_show_order_id" class="modal">
+        <div class="modal-content">
+            <div class="row">
+                <h5>Номер вашего заказа:</h5>
+
+                <h3 id="modal_show_order_id_text"></h3>
+            </div>
+        </div>
     </div>
 
     <!--  Scripts-->
@@ -101,6 +110,7 @@
     <script src="js/axios.min.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.5.2/qs.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.17.0/dist/jquery.validate.min.js"></script>
     <script src="js/materialize.js"></script>
     <script src="js/lodash.js"></script>
     <script src="js/index.js"></script>

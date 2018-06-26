@@ -1,4 +1,5 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const http = require('http')
 const path = require('path')
 const asyncHandler = require('express-async-handler')
@@ -15,6 +16,7 @@ migrate()
 const app = express()
 
 app.use(express.static('public'))
+app.use(bodyParser.json())
 
 app.set('port', 1337)
 
@@ -53,6 +55,8 @@ app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
     const pg = getConnection()
     const { id } = req.params
 
+    console.info(req.body)
+
     const { name, email, expirePeriod } = req.body
 
     const books = await pg
@@ -65,7 +69,7 @@ app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
         return res.status(404).end()
     }
 
-    if (!name || !email || !expireDate) {
+    if (!name || !email || !expirePeriod) {
         return res.status(403).end()
     }
 
@@ -86,12 +90,13 @@ app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
     let customer
 
     if (customers.length === 0) {
-        customer = await pg('customers')
+        customer = (await pg('customers')
             .insert({
                 name,
                 email
             })
-            .returning('*')
+            .returning('*'))[0]
+
     } else {
         customer = customers[0]
     }
@@ -102,12 +107,25 @@ app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
         .where('customer_id', customer.id)
 
     let customerCanMakeOrder = true
+    let customerHasSameBook = false
 
     for (let order of orders) {
+        // сдача книги просрочена или пользователь пытается взять книгу, которая уже у него на руках
+        if (book.id === order.book_id) {
+            customerHasSameBook = true
+            break
+        }
+
         if (moment(order.expires_at).isAfter(moment(order.created_at))) {
             customerCanMakeOrder = false
             break
         }
+    }
+
+    if (customerHasSameBook) {
+        return res.status(403).json({
+            message: 'Customer already has this book'
+        })
     }
 
     if (!customerCanMakeOrder) {
@@ -116,13 +134,13 @@ app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
         })
     }
 
-    const bookOrder = await pg('book_orders')
+    const bookOrder = (await pg('book_orders')
         .insert({
             book_id: book.id,
             customer_id: customer.id,
             expires_at: moment().add(expirePeriod, 'days')
         })
-        .returning('*')
+        .returning('*'))[0]
 
     return res.json({
         orderId: bookOrder.id

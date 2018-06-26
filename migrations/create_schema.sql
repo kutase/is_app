@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS books (
     author text NOT NULL,
     name text NOT NULL,
     cover_url text,
+    description text,
     count integer NOT NULL
 );
 

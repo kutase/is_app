@@ -47,26 +47,73 @@ const renderCurrentBook = (book) => {
 
     $('#reserve_book').click(e => {
         e.preventDefault()
-        console.log('open modal', $('.modal'))
 
         //clear form
         $('.modal_reserve_form_form')[0].reset()
 
-        $('.modal').modal('open')
+        $('#modal_reserve_form').modal('open')
     })
+
+    let canSubmit = true
 
     $('.modal_reserve_form_form').submit(e => {
-        e.preventDefault()
-        
-        const data = {
-            expirePeriod: $('select')[0].value,
-            name: $('#name')[0].value,
-            email: $('#email')[0].value
-        }
+        if (canSubmit) {
+            canSubmit = false
+            e.preventDefault()
+            
+            const data = {
+                expirePeriod: $('select')[0].value,
+                name: $('#name')[0].value,
+                email: $('#email')[0].value
+            }
 
-        console.log(data)
+            axios.put(`/api/books/${book.id}/reserve`, data)
+                .then(resp => {
+                    const { orderId } = resp.data
+
+                    $('#modal_reserve_form').modal('close')
+
+                    router.navigate(`/books/${book.id}/showOrderId/${orderId}`)
+
+                    canSubmit = true
+                })
+                .catch(err => {
+                    console.error('Error:', err)
+
+                    $('#modal_reserve_form').modal('close')
+
+                    if (err.response) {
+                        const data = err.response.data
+
+                        switch (data.message) {
+                            case 'Customer already has this book':
+                                M.toast({ html: `<span style="color: red;"><strong>Вы не можете взять больше одного экземпляра одной и той же книги</strong></span>` })
+                                break
+
+                            case 'Customer need to pay off the debt':
+                                M.toast({ html: `<span style="color: red;"><strong>Вы не можете резервировать книги, пока не погасите задолженность</strong></span>` })
+                                break
+
+                            case 'Books is over':
+                                M.toast({ html: `<span style="color: red;"><strong>К сожалению не осталось свободных экземпляров данной книги</strong></span>` })
+                                break                    
+
+                            default:
+                                break
+                        }
+                    }
+
+                    canSubmit = true
+                })
+        }
     })
 
+}
+
+const renderOrderId = (orderId) => {
+    $('#modal_show_order_id_text').text(orderId)
+
+    $('#modal_show_order_id').modal('open')
 }
 
 const initElements = () => {
@@ -76,6 +123,8 @@ const initElements = () => {
 (function ($) {
     $('.modal').modal()
     $('select').formSelect()
+
+    $("select[required]").css({ position: 'absolute', display: 'inline', height: 0, padding: 0, width: 0 })
 
     $(function () {
 
@@ -89,6 +138,8 @@ const initElements = () => {
                 console.log('query:', query)
 
                 $('.search_input').show()
+
+                $('#modal_show_order_id').modal('close')
 
                 $('.books_collection').hide()
                 $('.current_book').hide()
@@ -115,6 +166,8 @@ const initElements = () => {
             .on('/books/:id', (params, query) => {
                 const { id } = params
 
+                $('#modal_show_order_id').modal('close')
+
                 $('.books_collection').hide()
                 $('.search_input').hide()
 
@@ -133,6 +186,11 @@ const initElements = () => {
                     .catch(err => {
                         console.error('Error:', err)
                     })
+            })
+            .on('/books/:id/showOrderId/:orderId', (params, query) => {
+                const { id, orderId } = params
+
+                renderOrderId(orderId)
             })
             .resolve()
 
