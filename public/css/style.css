@@ -49,3 +49,26 @@
   padding-left: 100px;
   min-height: 100px;
 }
+
+.book_current_image {
+  width: 500px;
+  margin: 0 auto;
+}
+
+.current_book {
+  margin: 0 auto;
+  float: none!important;
+}
+
+.card.large {
+  height: 800px;
+}
+
+.author {
+  margin-top: 5px!important;
+}
+
+.books_count {
+  font-size: 12px;
+  margin-top: 10px!important;
+}
