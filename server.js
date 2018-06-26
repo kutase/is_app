@@ -1,5 +1,6 @@
 const express = require('express')
 const http = require('http')
+const path = require('path')
 const asyncHandler = require('express-async-handler')
 const moment = require('moment')
 
@@ -13,9 +14,11 @@ migrate()
 
 const app = express()
 
+app.use(express.static('public'))
+
 app.set('port', 1337)
 
-app.get('/books', asyncHandler(async (req, res) => {
+app.get('/api/books', asyncHandler(async (req, res) => {
     const pg = getConnection()
     const { search = '' } = req.query
 
@@ -28,7 +31,7 @@ app.get('/books', asyncHandler(async (req, res) => {
     res.json(books)
 }))
 
-app.get('/books/:id', asyncHandler(async (req, res) => {
+app.get('/api/books/:id', asyncHandler(async (req, res) => {
     const pg = getConnection()
     const { id } = req.params
 
@@ -46,7 +49,7 @@ app.get('/books/:id', asyncHandler(async (req, res) => {
 }))
 
 // пользователь резервирует книгу
-app.put('/books/:id/reserve', asyncHandler(async (req, res) => {
+app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
     const pg = getConnection()
     const { id } = req.params
 
@@ -127,7 +130,7 @@ app.put('/books/:id/reserve', asyncHandler(async (req, res) => {
 }))
 
 // сотрудник библиотеки делает при выдаче книги
-app.put('/books/:id/process_order/:orderId', asyncHandler(async (req, res) => {
+app.put('/api/books/:id/process_order/:orderId', asyncHandler(async (req, res) => {
     const pg = getConnection()
     const { id, orderId } = req.params
 
@@ -175,6 +178,10 @@ app.put('/books/:id/process_order/:orderId', asyncHandler(async (req, res) => {
 
     return res.json(updatedOrder)
 }))
+
+app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html'))
+})
 
 http.createServer(app)
     .listen(app.get('port'), () => {

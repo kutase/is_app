@@ -1,0 +1,51 @@
+/* Custom Stylesheet */
+/**
+ * Use this file to override Materialize files so you can update
+ * the core Materialize files in the future
+ *
+ * Made By MaterializeCSS.com
+ */
+
+.icon-block {
+  padding: 0 15px;
+}
+.icon-block .material-icons {
+	font-size: inherit;
+}
+
+.books_collection {
+  padding: 0 200px;
+}
+
+.books_collection .collection li.collection-item:not(.active):hover {
+  background-color: #ddd;
+}
+
+.books_collection .collection li.collection-item {
+  cursor: pointer;
+}
+
+.search_input {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  padding-left: 40px;
+}
+
+.book_image {
+  position: absolute;
+  width: 55px;
+  /* height: 42px; */
+  overflow: hidden;
+  left: 15px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.book_title {
+  font-weight: bold;
+}
+
+.collection .collection-item.book_avatar {
+  padding-left: 100px;
+  min-height: 100px;
+}
