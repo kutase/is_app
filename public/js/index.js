@@ -126,6 +126,66 @@ const initElements = () => {
 
     $("select[required]").css({ position: 'absolute', display: 'inline', height: 0, padding: 0, width: 0 })
 
+    $('#get_order_btn').click(e => {
+        e.preventDefault()
+
+        $('.current_order').hide()
+        $('.nothing').hide()
+        $('.current_order').empty()
+
+        const orderId = $('#search_order_input_el')[0].value
+
+        axios.get(`/api/orders/${orderId}`)
+            .then(resp => {
+                const order = resp.data
+
+                $('.current_order').html(`
+                    <ul class="collection">
+                        <li class="collection-item avatar book_avatar" order_id="${order.orderId}">
+                            <img src="${order.book_cover_url}" alt="" class="book_image">
+                            <span class="title book_title">Заказ №${order.orderId}</span>
+                            <p class="book_title">${order.book_name}</p>
+                            <p class="author">${order.book_author}</p>
+                            <p>Заказал: ${order.customer_name}</p>
+                            <p class="books_count">Доступно экземпляров: ${order.book_count}</p>
+                            <button class="waves-effect waves-light btn red" id="close_book_order">Завершить заказ</button>
+                        </li>
+                    </ul>
+                `)
+
+                $('.current_order').show()
+
+                let orderIsClosing = false
+
+                $('#close_book_order').click(() => {
+                    if (!orderIsClosing) {
+                        orderIsClosing = true
+                        if (window.confirm('Завершить заказ?')) {
+                            axios.put(`/api/books/${order.book_id}/process_order/${order.orderId}`)
+                                .then(resp => {
+                                    orderIsClosing = false
+                                    $('.current_order').empty()
+                                    router.navigate('/admin/orders')
+                                })
+                                .catch(err => {
+                                    console.error('Error:', err)
+                                    orderIsClosing = false
+                                })
+                        } else {
+                            orderIsClosing = false
+                        }
+                    }
+                })
+            })
+            .catch(err => {
+                console.error('Error:', err)
+                
+                if (err.response.status === 404) {
+                    $('.nothing').show()
+                }
+            })
+    })
+
     $(function () {
 
         const router = new Navigo('http://localhost:1337/')
@@ -140,6 +200,9 @@ const initElements = () => {
                 $('.search_input').show()
 
                 $('#modal_show_order_id').modal('close')
+
+                $('#admin_order_page').hide()
+                $('.nothing').hide()
 
                 $('.books_collection').hide()
                 $('.current_book').hide()
@@ -161,7 +224,9 @@ const initElements = () => {
             .on('/', () => {
                 $('.books_collection').hide()
                 $('.current_book').hide()
+                $('.nothing').hide()
                 $('.search_input').show()
+                $('#admin_order_page').hide()
             })
             .on('/books/:id', (params, query) => {
                 const { id } = params
@@ -170,6 +235,9 @@ const initElements = () => {
 
                 $('.books_collection').hide()
                 $('.search_input').hide()
+                $('.nothing').hide()
+
+                $('#admin_order_page').hide()
 
                 $('.current_book').hide()
                 $('.current_book').empty()
@@ -190,8 +258,32 @@ const initElements = () => {
             .on('/books/:id/showOrderId/:orderId', (params, query) => {
                 const { id, orderId } = params
 
+                $('#admin_order_page').hide()
+                $('.nothing').hide()
+
                 renderOrderId(orderId)
             })
+            .on('/admin/orders', (params, query) => {
+                $('#modal_show_order_id').modal('close')
+                $('.books_collection').hide()
+                $('.search_input').hide()
+                $('.nothing').hide()
+                $('.current_book').hide()
+                $('#search_books_input').hide()
+
+                $('#admin_order_page').show()
+            })
+            // .on('/admin/orders/:id', (params, query) => {
+            //     const { id, orderId } = params
+
+            //     $('#modal_show_order_id').modal('close')
+            //     $('.books_collection').hide()
+            //     $('.search_input').hide()
+            //     $('.current_book').hide()
+            //     $('#search_books_input').hide()
+
+            //     $('#admin_order_page').show()
+            // })
             .resolve()
 
         window.router = router

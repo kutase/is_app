@@ -147,6 +147,42 @@ app.put('/api/books/:id/reserve', asyncHandler(async (req, res) => {
     })
 }))
 
+app.get('/api/orders/:id', asyncHandler(async (req, res) => {
+    const pg = getConnection()
+    const { id } = req.params
+
+    const orders = await pg
+        .select(
+            'book_orders.id as orderId',
+            'is_done',
+            'created_at',
+            'expires_at',
+            'books.id as book_id',
+            'books.name as book_name',
+            'books.author as book_author',
+            'books.name as book_name',
+            'books.cover_url as book_cover_url',
+            'books.description as book_description',
+            'books.count as book_count',
+
+            'customers.name as customer_name',
+            'customers.email as customer_email'
+        )
+        .from('book_orders')
+        .leftOuterJoin('books', 'books.id', 'book_orders.book_id')
+        .leftOuterJoin('customers', 'customers.id', 'book_orders.customer_id')
+        .where('book_orders.id', parseFloat(id))
+        .andWhere('is_done', false)
+        .limit(1)
+        .options({ nestTables: true })
+
+    if (orders.length === 0) {
+        return res.status(404).end()
+    }
+
+    res.json(orders[0])
+}))
+
 // сотрудник библиотеки делает при выдаче книги
 app.put('/api/books/:id/process_order/:orderId', asyncHandler(async (req, res) => {
     const pg = getConnection()
@@ -182,11 +218,12 @@ app.put('/api/books/:id/process_order/:orderId', asyncHandler(async (req, res) =
         })
     }
 
-    const updatedOrder = await pg('book_orders')
+    const updatedOrder = (await pg('book_orders')
         .where('id', order.id)
         .update({
             is_done: true
         })
+        .returning('*'))[0]
 
     await pg('books')
         .where('id', book.id)

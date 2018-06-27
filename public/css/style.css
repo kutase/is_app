@@ -78,3 +78,16 @@
   margin-right: 13px;
   margin-top: 15px;
 }
+
+.current_order {
+  padding: 0 200px!important;
+}
+
+#close_book_order {
+  margin: 20px 0;
+}
+
+.nothing {
+  padding: 0 180px!important;
+  font-size: 20px;
+}
